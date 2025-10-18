@@ -1,0 +1,2 @@
+"""Catalog URL configuration."""
+
