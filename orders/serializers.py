@@ -72,6 +72,30 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return None
 
 
+class OrderListSerializer(serializers.ModelSerializer):
+    """Order list item with basic information."""
+    promo = serializers.SerializerMethodField()
+    items_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'status', 'full_name', 'phone_number', 'payment_method',
+            'promo', 'subtotal', 'discount_total', 'total', 'items_count',
+            'created_at'
+        ]
+    
+    def get_promo(self, obj):
+        """Get promo code if used."""
+        if obj.promo:
+            return obj.promo.code
+        return None
+    
+    def get_items_count(self, obj):
+        """Get count of items in order."""
+        return obj.items.count()
+
+
 class OrderDetailSerializer(serializers.ModelSerializer):
     """Order detail with all information."""
     promo = serializers.SerializerMethodField()

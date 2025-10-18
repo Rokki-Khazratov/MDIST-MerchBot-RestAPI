@@ -9,6 +9,7 @@ from orders.models import Order
 from orders.serializers import (
     OrderCreateSerializer,
     OrderCreateResponseSerializer,
+    OrderListSerializer,
     OrderDetailSerializer
 )
 from orders.services import OrderService
@@ -26,6 +27,7 @@ class OrderViewSet(viewsets.GenericViewSet):
     """
     Orders ViewSet.
     
+    GET /api/v1/orders/ - List all orders
     POST /api/v1/orders/ - Create order
     GET /api/v1/orders/{id}/ - Get order details
     """
@@ -33,6 +35,12 @@ class OrderViewSet(viewsets.GenericViewSet):
         'items__product__images'
     ).select_related('promo')
     serializer_class = OrderDetailSerializer
+    
+    def list(self, request):
+        """List all orders."""
+        queryset = self.get_queryset().order_by('-created_at')
+        serializer = OrderListSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
     
     def create(self, request):
         """Create new order."""
