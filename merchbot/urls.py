@@ -41,6 +41,9 @@ urlpatterns = [
         path('orders/', include('orders.urls')),
     ])),
     
+    # Telegram Bot
+    path('telegram/', include('telegram_bot.urls')),
+    
     # API Documentation (uncomment after installing drf-spectacular)
     # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

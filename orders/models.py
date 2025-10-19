@@ -26,14 +26,10 @@ class Order(models.Model):
     STATUS_NEW = 'new'
     STATUS_CONTACTED = 'contacted'
     STATUS_CONFIRMED = 'confirmed'
-    STATUS_CANCELED = 'canceled'
-    STATUS_DELIVERED = 'delivered'
     STATUS_CHOICES = [
         (STATUS_NEW, 'New'),
         (STATUS_CONTACTED, 'Contacted'),
         (STATUS_CONFIRMED, 'Confirmed'),
-        (STATUS_CANCELED, 'Canceled'),
-        (STATUS_DELIVERED, 'Delivered'),
     ]
     
     # Customer info
@@ -137,7 +133,9 @@ class OrderItem(models.Model):
     )
     product = models.ForeignKey(
         Product,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='order_items'
     )
     

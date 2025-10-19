@@ -112,3 +112,58 @@ class OrderViewSet(viewsets.GenericViewSet):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+    
+    @action(detail=True, methods=['patch'])
+    def update_status(self, request, pk=None):
+        """
+        Update order status.
+        
+        PATCH /api/v1/orders/{id}/update_status/
+        Body: {"status": "contacted"}
+        """
+        try:
+            order = self.get_queryset().get(pk=pk)
+        except Order.DoesNotExist:
+            return Response(
+                {
+                    'error_code': 'ORDER_NOT_FOUND',
+                    'message': f'Order with ID {pk} not found'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        new_status = request.data.get('status')
+        
+        # Validate status
+        valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
+        if not new_status:
+            return Response(
+                {
+                    'error_code': 'VALIDATION_ERROR',
+                    'message': 'Status is required',
+                    'valid_statuses': valid_statuses
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if new_status not in valid_statuses:
+            return Response(
+                {
+                    'error_code': 'INVALID_STATUS',
+                    'message': f'Invalid status: {new_status}',
+                    'valid_statuses': valid_statuses
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update status
+        old_status = order.status
+        order.status = new_status
+        order.save()
+        
+        return Response({
+            'order_id': order.id,
+            'old_status': old_status,
+            'new_status': order.status,
+            'message': f'Order status updated from {old_status} to {new_status}'
+        })

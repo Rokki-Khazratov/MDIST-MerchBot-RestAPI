@@ -194,12 +194,15 @@ class ProductAdmin(admin.ModelAdmin):
     def price_display(self, obj):
         """Display price with discount indicator."""
         if obj.discount_price:
+            discount_price_str = f"{float(obj.discount_price):,.2f}"
+            price_str = f"{float(obj.price):,.2f}"
             return format_html(
-                '<div style="font-weight: bold; color: #dc3545;">{:,.2f} UZS</div>'
-                '<div style="text-decoration: line-through; color: #6c757d; font-size: 0.85em;">{:,.2f} UZS</div>',
-                float(obj.discount_price), float(obj.price)
+                '<div style="font-weight: bold; color: #dc3545;">{} UZS</div>'
+                '<div style="text-decoration: line-through; color: #6c757d; font-size: 0.85em;">{} UZS</div>',
+                discount_price_str, price_str
             )
-        return format_html('<div style="font-weight: bold;">{:,.2f} UZS</div>', float(obj.price))
+        price_str = f"{float(obj.price):,.2f}"
+        return format_html('<div style="font-weight: bold;">{} UZS</div>', price_str)
     price_display.short_description = 'Price'
     
     def price_effective_display(self, obj):
@@ -207,7 +210,8 @@ class ProductAdmin(admin.ModelAdmin):
         price = obj.price_effective
         if price is None:
             return '-'
-        return format_html('<strong>{:,.2f} UZS</strong>', float(price))
+        price_str = f"{float(price):,.2f}"
+        return format_html('<strong>{} UZS</strong>', price_str)
     price_effective_display.short_description = 'Effective Price'
     
     def discount_percentage(self, obj):
@@ -277,19 +281,23 @@ class ProductAdmin(admin.ModelAdmin):
     
     def apply_10_discount(self, request, queryset):
         """Apply 10% discount to selected products."""
+        count = 0
         for product in queryset:
             product.discount_price = product.price * 0.9
             product.save()
-        self.message_user(request, f'🎁 10% discount applied to {queryset.count()} product(s).')
-    apply_10_discount.short_description = '🎁 Apply 10% discount'
+            count += 1
+        self.message_user(request, f'🎁 10% discount applied to {count} product(s).')
+    apply_10_discount.short_description = '🎁 Apply 10%% discount'
     
     def apply_20_discount(self, request, queryset):
         """Apply 20% discount to selected products."""
+        count = 0
         for product in queryset:
             product.discount_price = product.price * 0.8
             product.save()
-        self.message_user(request, f'🎁 20% discount applied to {queryset.count()} product(s).')
-    apply_20_discount.short_description = '🎁 Apply 20% discount'
+            count += 1
+        self.message_user(request, f'🎁 20% discount applied to {count} product(s).')
+    apply_20_discount.short_description = '🎁 Apply 20%% discount'
     
     def remove_discount(self, request, queryset):
         """Remove discount from selected products."""

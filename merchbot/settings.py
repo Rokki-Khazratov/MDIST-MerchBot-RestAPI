@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'catalog',
     'promos',
     'orders',
+    'telegram_bot',
 ]
 
 MIDDLEWARE = [
@@ -172,6 +173,60 @@ INTERNAL_IPS = [
 
 # Products marked as "new" if created within this many days
 IS_NEW_PRODUCT_DAYS = 7
+
+# Admin URL prefix (for links in Telegram notifications)
+# Set this to your production URL, e.g., 'https://admin.mysite.com'
+ADMIN_URL_PREFIX = 'http://127.0.0.1:8000'  # Change in production
+
+# Logging configuration for live request logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'request': {
+            'format': '🌐 {asctime} {method} {path} - {status} ({duration}ms)',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'request',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 # Image upload settings
 IMAGE_MAX_SIZE_MB = 5
