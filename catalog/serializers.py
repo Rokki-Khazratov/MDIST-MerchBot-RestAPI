@@ -2,7 +2,7 @@
 Catalog DRF serializers.
 """
 from rest_framework import serializers
-from catalog.models import Category, Product, ImageAsset, ProductImage
+from catalog.models import Category, Product, ProductImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -12,34 +12,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['id', 'name', 'slug', 'is_active', 'sort_order']
         read_only_fields = ['id']
-
-
-class ImageAssetSerializer(serializers.ModelSerializer):
-    """Image asset serializer."""
-    
-    url = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = ImageAsset
-        fields = ['id', 'url', 'width', 'height', 'content_type', 'file_size']
-        read_only_fields = ['id', 'width', 'height', 'content_type', 'file_size']
-    
-    def get_url(self, obj):
-        """Get absolute URL for image."""
-        request = self.context.get('request')
-        if request and obj.file:
-            return request.build_absolute_uri(obj.file.url)
-        return obj.file.url if obj.file else None
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    """Product image through table serializer."""
-    
-    image = ImageAssetSerializer(read_only=True)
-    
-    class Meta:
-        model = ProductImage
-        fields = ['id', 'image', 'sort_order', 'alt_text', 'is_primary']
 
 
 class ProductListSerializer(serializers.ModelSerializer):
@@ -64,12 +36,13 @@ class ProductListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_thumbnail(self, obj):
-        """Get primary image as thumbnail."""
+        """Get primary image URL as thumbnail."""
         primary_image = obj.get_primary_image()
-        if primary_image:
+        if primary_image and primary_image.image:
             request = self.context.get('request')
-            serializer = ImageAssetSerializer(primary_image, context={'request': request})
-            return serializer.data
+            if request:
+                return request.build_absolute_uri(primary_image.image.url)
+            return primary_image.image.url
         return None
 
 
@@ -101,23 +74,29 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_thumbnail(self, obj):
-        """Get primary image as thumbnail."""
+        """Get primary image URL as thumbnail."""
         primary_image = obj.get_primary_image()
-        if primary_image:
+        if primary_image and primary_image.image:
             request = self.context.get('request')
-            serializer = ImageAssetSerializer(primary_image, context={'request': request})
-            return serializer.data
+            if request:
+                return request.build_absolute_uri(primary_image.image.url)
+            return primary_image.image.url
         return None
     
     def get_images(self, obj):
-        """Get all product images sorted by sort_order."""
-        product_images = obj.productimage_set.all().order_by('sort_order')
+        """Get all product image URLs sorted by sort_order."""
+        product_images = obj.images.all().order_by('sort_order')
         request = self.context.get('request')
-        return ProductImageSerializer(
-            product_images, 
-            many=True, 
-            context={'request': request}
-        ).data
+        
+        urls = []
+        for img in product_images:
+            if img.image:
+                if request:
+                    urls.append(request.build_absolute_uri(img.image.url))
+                else:
+                    urls.append(img.image.url)
+        
+        return urls
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
@@ -145,4 +124,3 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
                     'discount_price': 'Discount price must be less than regular price'
                 })
         return data
-

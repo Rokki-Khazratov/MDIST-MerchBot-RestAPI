@@ -10,15 +10,14 @@ from merchbot.views import health_check
 from merchbot.admin import admin_site
 
 # Register all models with custom admin site
-from catalog.admin import CategoryAdmin, ImageAssetAdmin, ProductAdmin
-from catalog.models import Category, ImageAsset, Product
+from catalog.admin import CategoryAdmin, ProductAdmin
+from catalog.models import Category, Product
 from promos.admin import PromoCodeAdmin
 from promos.models import PromoCode
 from orders.admin import OrderAdmin, OrderItemAdmin
 from orders.models import Order, OrderItem
 
 admin_site.register(Category, CategoryAdmin)
-admin_site.register(ImageAsset, ImageAssetAdmin)
 admin_site.register(Product, ProductAdmin)
 admin_site.register(PromoCode, PromoCodeAdmin)
 admin_site.register(Order, OrderAdmin)

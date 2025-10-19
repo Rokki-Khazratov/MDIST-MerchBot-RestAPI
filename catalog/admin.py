@@ -3,9 +3,7 @@ Catalog admin configuration.
 """
 from django.contrib import admin
 from django.utils.html import format_html
-from django.db.models import Count, Sum, Q
-from django.urls import reverse
-from catalog.models import Category, ImageAsset, Product, ProductImage
+from catalog.models import Category, Product, ProductImage
 
 
 @admin.register(Category)
@@ -35,8 +33,7 @@ class CategoryAdmin(admin.ModelAdmin):
     def product_count(self, obj):
         """Display total number of products in category."""
         count = obj.products.count()
-        url = reverse('admin:catalog_product_changelist') + f'?category__id__exact={obj.id}'
-        return format_html('<a href="{}">{} products</a>', url, count)
+        return format_html('<strong>{}</strong> products', count)
     product_count.short_description = 'Total Products'
     
     def active_products_count(self, obj):
@@ -58,66 +55,23 @@ class CategoryAdmin(admin.ModelAdmin):
     deactivate_categories.short_description = '✗ Deactivate selected categories'
 
 
-@admin.register(ImageAsset)
-class ImageAssetAdmin(admin.ModelAdmin):
-    """Admin for ImageAsset model."""
-    
-    list_display = ['id', 'image_preview', 'file_name', 'dimensions', 'file_size_display', 'created_at']
-    list_filter = ['created_at']
-    search_fields = ['file', 'sha256']
-    readonly_fields = ['image_preview', 'width', 'height', 'content_type', 'sha256', 'file_size', 'created_at']
-    ordering = ['-created_at']
-    
-    def image_preview(self, obj):
-        """Display image preview."""
-        if obj.file:
-            return format_html(
-                '<img src="{}" style="max-width: 100px; max-height: 100px;" />',
-                obj.file.url
-            )
-        return '-'
-    image_preview.short_description = 'Preview'
-    
-    def file_name(self, obj):
-        """Display file name."""
-        return obj.file.name if obj.file else '-'
-    file_name.short_description = 'File'
-    
-    def dimensions(self, obj):
-        """Display image dimensions."""
-        return f'{obj.width}x{obj.height}'
-    dimensions.short_description = 'Size'
-    
-    def file_size_display(self, obj):
-        """Display file size in human-readable format."""
-        size = obj.file_size
-        if size < 1024:
-            return f'{size} B'
-        elif size < 1024 * 1024:
-            return f'{size / 1024:.1f} KB'
-        else:
-            return f'{size / (1024 * 1024):.1f} MB'
-    file_size_display.short_description = 'File Size'
-
-
 class ProductImageInline(admin.TabularInline):
-    """Inline for ProductImage through model."""
+    """Inline for ProductImage - simple file upload."""
     
     model = ProductImage
     extra = 3
-    fields = ['image_preview', 'image', 'sort_order', 'is_primary', 'alt_text']
+    fields = ['image_preview', 'image', 'sort_order', 'is_primary']
     readonly_fields = ['image_preview']
-    raw_id_fields = ['image']
     ordering = ['sort_order']
     
     def image_preview(self, obj):
-        """Display small image preview."""
-        if obj.image and obj.image.file:
+        """Display image preview."""
+        if obj.image:
             return format_html(
-                '<img src="{}" style="max-width: 100px; max-height: 100px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />',
-                obj.image.file.url
+                '<img src="{}" style="max-width: 100px; max-height: 100px; border-radius: 8px;" />',
+                obj.image.url
             )
-        return '-'
+        return 'No image'
     image_preview.short_description = 'Preview'
 
 
@@ -173,10 +127,10 @@ class ProductAdmin(admin.ModelAdmin):
     def thumbnail_display(self, obj):
         """Display small thumbnail in list."""
         primary_image = obj.get_primary_image()
-        if primary_image and primary_image.file:
+        if primary_image and primary_image.image:
             return format_html(
                 '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />',
-                primary_image.file.url
+                primary_image.image.url
             )
         return format_html('<div style="width: 50px; height: 50px; background: #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">No image</div>')
     thumbnail_display.short_description = ''
@@ -184,10 +138,10 @@ class ProductAdmin(admin.ModelAdmin):
     def thumbnail_large(self, obj):
         """Display large thumbnail in form."""
         primary_image = obj.get_primary_image()
-        if primary_image and primary_image.file:
+        if primary_image and primary_image.image:
             return format_html(
                 '<img src="{}" style="max-width: 300px; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />',
-                primary_image.file.url
+                primary_image.image.url
             )
         return 'No primary image set'
     thumbnail_large.short_description = 'Primary Image Preview'
@@ -288,7 +242,7 @@ class ProductAdmin(admin.ModelAdmin):
             product.save()
             count += 1
         self.message_user(request, f'🎁 10% discount applied to {count} product(s).')
-    apply_10_discount.short_description = '🎁 Apply 10%% discount'
+    apply_10_discount.short_description = '🎁 Apply 10% discount'
     
     def apply_20_discount(self, request, queryset):
         """Apply 20% discount to selected products."""
@@ -298,7 +252,7 @@ class ProductAdmin(admin.ModelAdmin):
             product.save()
             count += 1
         self.message_user(request, f'🎁 20% discount applied to {count} product(s).')
-    apply_20_discount.short_description = '🎁 Apply 20%% discount'
+    apply_20_discount.short_description = '🎁 Apply 20% discount'
     
     def remove_discount(self, request, queryset):
         """Remove discount from selected products."""
