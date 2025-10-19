@@ -85,7 +85,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     
     def get_images(self, obj):
         """Get all product image URLs sorted by sort_order."""
-        product_images = obj.images.all().order_by('sort_order')
+        product_images = obj.productimage_set.all().order_by('sort_order')
         request = self.context.get('request')
         
         urls = []

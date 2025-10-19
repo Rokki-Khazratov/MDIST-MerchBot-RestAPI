@@ -97,7 +97,7 @@ class Product(models.Model):
 class ProductImage(models.Model):
     """Product images with direct file upload."""
     
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='products/', help_text='Product image')
     sort_order = models.IntegerField(default=0, db_index=True)
     is_primary = models.BooleanField(
