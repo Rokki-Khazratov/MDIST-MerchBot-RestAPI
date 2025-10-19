@@ -1,5 +1,9 @@
-{% extends "admin/base_site.html" %} {% load static %} {% block title
-%}Dashboard - {{ site_title }}{% endblock %} {% block extrastyle %}
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Dashboard - {{ site_title }}{% endblock %}
+
+{% block extrastyle %}
 <style>
   .dashboard-container {
     padding: 20px;
@@ -145,7 +149,9 @@
     font-size: 14px;
   }
 </style>
-{% endblock %} {% block content %}
+{% endblock %}
+
+{% block content %}
 <div class="dashboard-container">
   <h1 style="margin-bottom: 30px">📊 Dashboard Overview</h1>
 
