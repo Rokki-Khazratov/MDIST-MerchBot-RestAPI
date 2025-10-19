@@ -87,43 +87,21 @@ class Product(models.Model):
         return self.discount_price if self.discount_price else self.price
     
     def get_primary_image(self):
-        """Get the primary image."""
-        try:
-            return self.productimage_set.filter(is_primary=True).first()
-        except ProductImage.DoesNotExist:
-            return None
+        """Get the primary image (first image by sort_order)."""
+        return self.productimage_set.order_by('sort_order').first()
 
 
 class ProductImage(models.Model):
-    """Product images with direct file upload."""
+    """Product images with direct file upload. First image (sort_order=0) is primary."""
     
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='products/', help_text='Product image')
-    sort_order = models.IntegerField(default=0, db_index=True)
-    is_primary = models.BooleanField(
-        default=False,
-        help_text='Primary image (thumbnail) - exactly one per product'
-    )
+    sort_order = models.IntegerField(default=0, db_index=True, help_text='0 = primary image')
     
     class Meta:
         verbose_name = 'Product Image'
         verbose_name_plural = 'Product Images'
-        ordering = ['product', 'sort_order']
+        ordering = ['sort_order']
     
     def __str__(self):
         return f'{self.product.name} - Image {self.sort_order}'
-    
-    def clean(self):
-        """Validate that exactly one image is primary per product."""
-        if self.is_primary:
-            # Check if another image is already primary for this product
-            existing_primary = ProductImage.objects.filter(
-                product=self.product,
-                is_primary=True
-            ).exclude(pk=self.pk)
-            
-            if existing_primary.exists():
-                raise ValidationError(
-                    'This product already has a primary image. '
-                    'Please unset the current primary image first.'
-                )
