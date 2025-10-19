@@ -41,7 +41,7 @@ class OrderAdmin(admin.ModelAdmin):
         'order_id_display', 'customer_info', 'items_count', 'total_display',
         'status_badge', 'payment_badge', 'promo_badge', 'created_at'
     )
-    list_filter = ('status', 'payment_method', 'created_at', 'promo__isnull')
+    list_filter = ('status', 'payment_method', 'created_at')
     search_fields = ('id', 'full_name', 'phone_number', 'telegram_username')
     readonly_fields = (
         'order_summary', 'subtotal_display', 'discount_total_display', 
