@@ -104,16 +104,17 @@ class ProductImageInline(admin.TabularInline):
     """Inline for ProductImage through model."""
     
     model = ProductImage
-    extra = 1
-    fields = ['image_preview', 'image', 'sort_order', 'alt_text', 'is_primary']
+    extra = 3
+    fields = ['image_preview', 'image', 'sort_order', 'is_primary', 'alt_text']
     readonly_fields = ['image_preview']
     raw_id_fields = ['image']
+    ordering = ['sort_order']
     
     def image_preview(self, obj):
         """Display small image preview."""
         if obj.image and obj.image.file:
             return format_html(
-                '<img src="{}" style="max-width: 80px; max-height: 80px; border-radius: 4px;" />',
+                '<img src="{}" style="max-width: 100px; max-height: 100px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />',
                 obj.image.file.url
             )
         return '-'

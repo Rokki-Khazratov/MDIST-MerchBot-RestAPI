@@ -32,12 +32,12 @@ class NotificationService:
             str: Formatted HTML message
         """
         # Header
-        message = f"🛒 <b>НОВЫЙ ЗАКАЗ #{order.id}</b>\n"
+        message = f"🛒 <b>NEW ORDER #{order.id}</b>\n"
         message += "━━━━━━━━━━━━━━━━━━━━\n\n"
         
         # Customer info
-        message += f"👤 <b>Клиент:</b> {order.full_name}\n"
-        message += f"📞 <b>Телефон:</b> {order.phone_number}\n"
+        message += f"👤 <b>Customer:</b> {order.full_name}\n"
+        message += f"📞 <b>Phone:</b> {order.phone_number}\n"
         
         if order.telegram_username:
             message += f"💬 <b>Telegram:</b> @{order.telegram_username}\n"
@@ -45,7 +45,7 @@ class NotificationService:
         message += "\n"
         
         # Order items
-        message += "🛍️ <b>Товары:</b>\n"
+        message += "🛍️ <b>Items:</b>\n"
         for item in order.items.all():
             product_name = item.name_snapshot
             qty = item.qty
@@ -57,29 +57,29 @@ class NotificationService:
         message += "\n━━━━━━━━━━━━━━━━━━━━\n"
         
         # Pricing
-        message += f"💰 <b>Сумма:</b> {float(order.subtotal):,.0f} UZS\n"
+        message += f"💰 <b>Subtotal:</b> {float(order.subtotal):,.0f} UZS\n"
         
         if order.promo:
             discount_amount = order.discount_total
-            message += f"🎁 <b>Промокод:</b> {order.promo.code} (-{float(discount_amount):,.0f} UZS)\n"
+            message += f"🎁 <b>Promo Code:</b> {order.promo.code} (-{float(discount_amount):,.0f} UZS)\n"
         
-        message += f"💳 <b>Итого:</b> <b>{float(order.total):,.0f} UZS</b>\n\n"
+        message += f"💳 <b>Total:</b> <b>{float(order.total):,.0f} UZS</b>\n\n"
         
         # Additional info
         if order.comment:
-            message += f"📝 <b>Комментарий:</b> {order.comment}\n"
+            message += f"📝 <b>Comment:</b> {order.comment}\n"
         
         # Payment method
         payment_method_display = dict(Order.PAYMENT_METHOD_CHOICES).get(order.payment_method, order.payment_method)
-        message += f"💳 <b>Оплата:</b> {payment_method_display}\n"
+        message += f"💳 <b>Payment:</b> {payment_method_display}\n"
         
         # Order status
         status_display = dict(Order.STATUS_CHOICES).get(order.status, order.status)
-        message += f"📦 <b>Статус:</b> {status_display}\n\n"
+        message += f"📦 <b>Status:</b> {status_display}\n\n"
         
         # Admin link
         admin_url = f"{settings.ADMIN_URL_PREFIX or ''}/admin/orders/order/{order.id}/change/"
-        message += f"🔗 <a href='{admin_url}'>Управление заказом</a>"
+        message += f"🔗 <a href='{admin_url}'>Manage Order</a>"
         
         return message
     
@@ -126,8 +126,8 @@ class NotificationService:
             # Create inline keyboard with action buttons
             keyboard = [
                 [
-                    InlineKeyboardButton("✅ Закрыть как успешный", callback_data=f"order_success_{order.id}"),
-                    InlineKeyboardButton("❌ Закрыть как отмена", callback_data=f"order_cancel_{order.id}")
+                    InlineKeyboardButton("✅ Close as Successful", callback_data=f"order_success_{order.id}"),
+                    InlineKeyboardButton("❌ Cancel Order", callback_data=f"order_cancel_{order.id}")
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
