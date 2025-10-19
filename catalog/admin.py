@@ -197,14 +197,17 @@ class ProductAdmin(admin.ModelAdmin):
             return format_html(
                 '<div style="font-weight: bold; color: #dc3545;">{:,.2f} UZS</div>'
                 '<div style="text-decoration: line-through; color: #6c757d; font-size: 0.85em;">{:,.2f} UZS</div>',
-                obj.discount_price, obj.price
+                float(obj.discount_price), float(obj.price)
             )
-        return format_html('<div style="font-weight: bold;">{:,.2f} UZS</div>', obj.price)
+        return format_html('<div style="font-weight: bold;">{:,.2f} UZS</div>', float(obj.price))
     price_display.short_description = 'Price'
     
     def price_effective_display(self, obj):
         """Display effective price."""
-        return format_html('<strong>{:,.2f} UZS</strong>', obj.price_effective)
+        price = obj.price_effective
+        if price is None:
+            return '-'
+        return format_html('<strong>{:,.2f} UZS</strong>', float(price))
     price_effective_display.short_description = 'Effective Price'
     
     def discount_percentage(self, obj):
