@@ -212,8 +212,8 @@ class ProductAdmin(admin.ModelAdmin):
         if obj.discount_price and obj.price > 0:
             percent = ((obj.price - obj.discount_price) / obj.price) * 100
             return format_html(
-                '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">-{:.0f}%</span>',
-                percent
+                '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">-{}%</span>',
+                int(percent)
             )
         return '-'
     discount_percentage.short_description = 'Discount'

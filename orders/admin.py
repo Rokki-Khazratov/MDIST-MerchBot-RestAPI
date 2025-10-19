@@ -145,15 +145,15 @@ class OrderAdmin(admin.ModelAdmin):
             Order.STATUS_NEW: '#FFA500',  # Orange
             Order.STATUS_CONTACTED: '#1E90FF',  # Blue
             Order.STATUS_CONFIRMED: '#32CD32',  # Green
-            Order.STATUS_COMPLETED: '#228B22',  # Dark Green
-            Order.STATUS_CANCELLED: '#DC143C',  # Red
+            Order.STATUS_DELIVERED: '#228B22',  # Dark Green
+            Order.STATUS_CANCELED: '#DC143C',  # Red
         }
         icons = {
             Order.STATUS_NEW: '🆕',
             Order.STATUS_CONTACTED: '📞',
             Order.STATUS_CONFIRMED: '✅',
-            Order.STATUS_COMPLETED: '✔️',
-            Order.STATUS_CANCELLED: '❌',
+            Order.STATUS_DELIVERED: '✔️',
+            Order.STATUS_CANCELED: '❌',
         }
         return format_html(
             '<span style="background-color: {}; color: white; padding: 5px 12px; border-radius: 4px; font-weight: bold;">{} {}</span>',
@@ -255,14 +255,14 @@ class OrderAdmin(admin.ModelAdmin):
     mark_confirmed.short_description = '✅ Mark as Confirmed'
     
     def mark_completed(self, request, queryset):
-        """Bulk action: mark as completed."""
-        updated = queryset.update(status=Order.STATUS_COMPLETED)
-        self.message_user(request, f'✔️ {updated} order(s) marked as completed')
-    mark_completed.short_description = '✔️ Mark as Completed'
+        """Bulk action: mark as delivered."""
+        updated = queryset.update(status=Order.STATUS_DELIVERED)
+        self.message_user(request, f'✔️ {updated} order(s) marked as delivered')
+    mark_completed.short_description = '✔️ Mark as Delivered'
     
     def mark_cancelled(self, request, queryset):
         """Bulk action: mark as cancelled."""
-        updated = queryset.update(status=Order.STATUS_CANCELLED)
+        updated = queryset.update(status=Order.STATUS_CANCELED)
         self.message_user(request, f'❌ {updated} order(s) marked as cancelled')
     mark_cancelled.short_description = '❌ Mark as Cancelled'
     

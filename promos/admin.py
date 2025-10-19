@@ -94,7 +94,7 @@ class PromoCodeAdmin(admin.ModelAdmin):
     
     def usage_count(self, obj):
         """Display how many times promo was used."""
-        count = obj.order_set.count()
+        count = obj.orders.count()
         if count == 0:
             return format_html('<span style="color: #6c757d;">Not used yet</span>')
         elif count < 5:
@@ -105,7 +105,7 @@ class PromoCodeAdmin(admin.ModelAdmin):
     
     def usage_stats(self, obj):
         """Display detailed usage statistics."""
-        orders = obj.order_set.all()
+        orders = obj.orders.all()
         count = orders.count()
         
         if count == 0:
