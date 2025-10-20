@@ -34,7 +34,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_HOST=db
       - DB_PORT=5432
-      - ADMIN_URL_PREFIX=http://${SERVER_IP}:8000
+      - ADMIN_URL_PREFIX=http://${SERVER_IP}:8001
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_GROUP_ID=${TELEGRAM_GROUP_ID}
       - TELEGRAM_MINI_APP_URL=${TELEGRAM_MINI_APP_URL}
@@ -43,7 +43,7 @@ services:
       - media_volume:/app/media
       - logs_volume:/app/logs
     ports:
-      - "8000:8000"
+      - "8001:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
