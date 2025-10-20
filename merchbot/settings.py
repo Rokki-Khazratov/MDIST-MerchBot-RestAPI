@@ -3,6 +3,7 @@ Django settings for merchbot project.
 """
 
 from pathlib import Path
+import os
 from decimal import Decimal
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -13,12 +14,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-local-dev-key-change-in-production'
+# Read from environment if provided (Docker/production)
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-local-dev-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Read from environment (expects 'True' or 'False')
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['*']
+# Allow hosts from env (comma-separated), fallback to '*'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -49,6 +53,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware (must be first)
     'merchbot.middleware.RequestLoggingMiddleware',  # Custom request logging
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -81,8 +86,6 @@ WSGI_APPLICATION = 'merchbot.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-import os
 
 # Use PostgreSQL in production/Docker, SQLite in local dev
 if os.environ.get('DB_NAME'):
@@ -142,6 +145,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# WhiteNoise storage for efficient static serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -193,8 +199,8 @@ INTERNAL_IPS = [
 IS_NEW_PRODUCT_DAYS = 7
 
 # Admin URL prefix (for links in Telegram notifications)
-# Set this to your production URL, e.g., 'https://admin.mysite.com'
-ADMIN_URL_PREFIX = 'http://127.0.0.1:8000'  # Change in production
+# Read from environment; fallback to local dev URL
+ADMIN_URL_PREFIX = os.environ.get('ADMIN_URL_PREFIX', 'http://127.0.0.1:8000')
 
 # Simple logging configuration
 LOGGING = {
@@ -239,4 +245,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+
+# CSRF Trusted Origins (comma-separated list in env)
+_csrf_env = os.environ.get('CSRF_TRUSTED_ORIGINS')
+if _csrf_env:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_env.split(',') if o.strip()]
 
