@@ -8,8 +8,6 @@ asgiref==3.7.2
 httpx==0.25.2
 Pillow==10.1.0
 psycopg2-binary==2.9.9
-redis==5.0.1
-celery==5.3.4
 gunicorn==21.2.0
 whitenoise==6.6.0
 python-decouple==3.8
