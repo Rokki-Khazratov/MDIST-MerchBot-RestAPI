@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'django_filters',
+    'corsheaders',  # CORS support
     # 'drf_spectacular',  # Uncomment after installing dependencies
     # 'django_debug_toolbar',  # Uncomment after installing dependencies
     
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware (must be first)
     'merchbot.middleware.RequestLoggingMiddleware',  # Custom request logging
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -208,4 +210,18 @@ IMAGE_ALLOWED_FORMATS = ['jpeg', 'jpg', 'png', 'webp']
 # Decimal precision for monetary values (UZS)
 DECIMAL_MAX_DIGITS = 12
 DECIMAL_PLACES = 2
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 
