@@ -40,18 +40,8 @@ class ProductImageInline(admin.TabularInline):
     
     model = ProductImage
     extra = 1
-    fields = ['image_preview', 'image', 'sort_order']
-    readonly_fields = ['image_preview']
-    
-    def image_preview(self, obj):
-        """Display image preview."""
-        if obj.image:
-            return format_html(
-                '<img src="{}" style="max-width: 80px; max-height: 80px; border-radius: 4px;" />',
-                obj.image.url
-            )
-        return 'No image'
-    image_preview.short_description = 'Preview'
+    fields = ['image', 'sort_order']
+    can_delete = True
 
 
 @admin.register(Product)
@@ -91,6 +81,19 @@ class ProductAdmin(admin.ModelAdmin):
     
     inlines = [ProductImageInline]
     
+    def save_formset(self, request, form, formset, change):
+        """Handle inline formset saving."""
+        instances = formset.save(commit=False)
+        
+        # Only save instances that have an image
+        for instance in instances:
+            if instance.image:  # Only save if image is provided
+                instance.save()
+        
+        # Delete marked for deletion
+        for instance in formset.deleted_objects:
+            instance.delete()
+    
     def thumbnail_display(self, obj):
         """Display small thumbnail in list."""
         primary_image = obj.get_primary_image()
@@ -110,23 +113,23 @@ class ProductAdmin(admin.ModelAdmin):
                 '<img src="{}" style="max-width: 300px; border-radius: 8px;" />',
                 primary_image.image.url
             )
-        return 'No images uploaded (first image = primary)'
-    thumbnail_large.short_description = 'Primary Image (first by sort order)'
+        return 'No images uploaded'
+    thumbnail_large.short_description = 'Primary Image'
     
     def price_display(self, obj):
         """Display price with discount indicator."""
         if obj.discount_price:
             return format_html(
-                '<div style="font-weight: bold; color: #dc3545;">{:,.0f} сум</div>'
-                '<div style="text-decoration: line-through; color: #999; font-size: 0.85em;">{:,.0f} сум</div>',
-                float(obj.discount_price), float(obj.price)
+                '<div style="font-weight: bold; color: #dc3545;">{} сум</div>'
+                '<div style="text-decoration: line-through; color: #999; font-size: 0.85em;">{} сум</div>',
+                f"{float(obj.discount_price):,.0f}", f"{float(obj.price):,.0f}"
             )
-        return format_html('<div style="font-weight: bold;">{:,.0f} сум</div>', float(obj.price))
+        return format_html('<div style="font-weight: bold;">{} сум</div>', f"{float(obj.price):,.0f}")
     price_display.short_description = 'Price'
     
     def price_effective_display(self, obj):
         """Display effective price."""
-        return format_html('<strong>{:,.0f} сум</strong>', float(obj.price_effective))
+        return format_html('<strong>{} сум</strong>', f"{float(obj.price_effective):,.0f}")
     price_effective_display.short_description = 'Effective Price'
     
     def stock_status(self, obj):
