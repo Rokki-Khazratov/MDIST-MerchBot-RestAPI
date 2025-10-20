@@ -47,17 +47,9 @@ echo "Database is up - continuing"\n\
 echo "Running migrations..."\n\
 python manage.py migrate\n\
 \n\
-# Create superuser if it doesn\'t exist\n\
+# Create superuser if it doesn'\''t exist\n\
 echo "Creating superuser..."\n\
-python manage.py shell -c "\n\
-from django.contrib.auth import get_user_model\n\
-User = get_user_model()\n\
-if not User.objects.filter(username='admin').exists():\n\
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')\n\
-    print('Superuser created')\n\
-else:\n\
-    print('Superuser already exists')\n\
-"\n\
+python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('\''admin'\'', '\''admin@example.com'\'', '\''admin123'\'') if not User.objects.filter(username='\''admin'\'').exists() else None; print('\''Superuser created or already exists'\'')"\n\
 \n\
 # Execute command\n\
 exec "$@"' > /app/entrypoint.sh
