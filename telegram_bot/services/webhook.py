@@ -5,6 +5,7 @@ import logging
 from typing import Dict, Any, Optional
 from telegram import Update
 from telegram.ext import Application
+from asgiref.sync import sync_to_async
 
 from telegram_bot.services.telegram import TelegramService
 
@@ -28,8 +29,8 @@ class WebhookService:
             dict: Processing result
         """
         try:
-            # Get bot config
-            config = TelegramService.get_bot_config()
+            # Get bot config (async)
+            config = await TelegramService.get_bot_config_async()
             
             # Create application for update processing
             application = Application.builder().token(config.bot_token).build()
@@ -95,10 +96,36 @@ class WebhookService:
         message = update.message
         
         if command == '/start':
-            await message.reply_text(
-                '👋 Привет! Это бот для приема заказов университетского мерч-шопа.\n\n'
-                'Заказы создаются через Mini App и автоматически отправляются менеджерам.'
-            )
+            # Get bot config to check for Mini App URL
+            def _get_config():
+                from telegram_bot.models import BotConfig
+                config = BotConfig.objects.first()
+                return config
+            
+            config = await sync_to_async(_get_config)()
+            
+            if config and config.mini_app_url:
+                # Create inline keyboard with Mini App button
+                from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+                keyboard = [
+                    [InlineKeyboardButton("🛍️ Open Shop", url=config.mini_app_url)]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+                
+                await message.reply_text(
+                    '👋 Welcome to MDIST WEAR!\n'
+                    'The official merchandise project of MDIS Tashkent.\n\n'
+                    'Here you can browse, order, and represent your university with style.\n\n'
+                    'Please click the button below to open our shop👇',
+                    reply_markup=reply_markup
+                )
+            else:
+                await message.reply_text(
+                    '👋 Welcome to MDIST WEAR!\n'
+                    'The official merchandise project of MDIS Tashkent.\n\n'
+                    'Here you can browse, order, and represent your university with style.\n\n'
+                    'Mini App is currently being set up. Please check back later!'
+                )
         elif command == '/help':
             await message.reply_text(
                 '📋 <b>Доступные команды:</b>\n\n'
@@ -109,8 +136,6 @@ class WebhookService:
                 parse_mode='HTML'
             )
         elif command == '/status':
-            from asgiref.sync import sync_to_async
-            
             # Get bot config (sync -> async)
             def _get_config():
                 from telegram_bot.models import BotConfig
@@ -146,7 +171,6 @@ class WebhookService:
         elif command == '/health':
             import httpx
             from django.conf import settings
-            from asgiref.sync import sync_to_async
             
             # Check API health
             try:
@@ -268,6 +292,7 @@ class WebhookService:
             
             # Update order status to confirmed (sync -> async)
             def _update_order():
+                from orders.models import Order
                 order.status = Order.STATUS_CONFIRMED
                 order.save()
             
@@ -282,11 +307,17 @@ class WebhookService:
                 parse_mode='HTML'
             )
             
-            await query.answer("✅ Заказ успешно закрыт!")
+            try:
+                await query.answer("✅ Заказ успешно закрыт!")
+            except:
+                pass
             
         except Exception as e:
             logger.error(f'Error handling order success for #{order_id}: {e}')
-            await query.answer("❌ Ошибка при закрытии заказа")
+            try:
+                await query.answer("❌ Ошибка при закрытии заказа")
+            except:
+                pass
     
     @staticmethod
     async def _handle_order_cancel(query, order_id: str) -> None:

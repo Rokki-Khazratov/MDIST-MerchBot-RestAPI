@@ -22,7 +22,7 @@ class TelegramService:
     @staticmethod
     def get_bot_config() -> BotConfig:
         """
-        Get bot configuration.
+        Get bot configuration (sync version).
         
         Returns:
             BotConfig: Bot configuration
@@ -31,20 +31,6 @@ class TelegramService:
             BotNotConfiguredError: If bot is not configured
             BotInactiveError: If bot is inactive
         """
-        from asgiref.sync import async_to_sync
-        
-        # Check if we're in async context
-        import asyncio
-        try:
-            asyncio.get_running_loop()
-            # We're in async context - can't use sync DB calls
-            # This shouldn't happen if we use sync_to_async properly
-            logger.error('get_bot_config called from async context')
-            raise BotNotConfiguredError()
-        except RuntimeError:
-            # We're in sync context - OK
-            pass
-        
         try:
             config = BotConfig.objects.first()
         except Exception as e:
@@ -60,9 +46,40 @@ class TelegramService:
         return config
     
     @staticmethod
+    async def get_bot_config_async() -> BotConfig:
+        """
+        Get bot configuration (async version).
+        
+        Returns:
+            BotConfig: Bot configuration
+            
+        Raises:
+            BotNotConfiguredError: If bot is not configured
+            BotInactiveError: If bot is inactive
+        """
+        from asgiref.sync import sync_to_async
+        
+        def _get_config():
+            try:
+                return BotConfig.objects.first()
+            except Exception as e:
+                logger.error(f'Failed to get bot config: {e}')
+                raise BotNotConfiguredError()
+        
+        config = await sync_to_async(_get_config)()
+        
+        if not config:
+            raise BotNotConfiguredError()
+        
+        if not config.is_active:
+            raise BotInactiveError()
+        
+        return config
+    
+    @staticmethod
     def get_bot() -> Bot:
         """
-        Get Bot instance with configured token.
+        Get Bot instance with configured token (sync version).
         
         Returns:
             Bot: Telegram Bot instance
@@ -72,6 +89,21 @@ class TelegramService:
             BotInactiveError: If bot is inactive
         """
         config = TelegramService.get_bot_config()
+        return Bot(token=config.bot_token)
+    
+    @staticmethod
+    async def get_bot_async() -> Bot:
+        """
+        Get Bot instance with configured token (async version).
+        
+        Returns:
+            Bot: Telegram Bot instance
+            
+        Raises:
+            BotNotConfiguredError: If bot is not configured
+            BotInactiveError: If bot is inactive
+        """
+        config = await TelegramService.get_bot_config_async()
         return Bot(token=config.bot_token)
     
     @staticmethod
@@ -103,7 +135,7 @@ class TelegramService:
         if bot_token:
             bot = Bot(token=bot_token)
         else:
-            bot = TelegramService.get_bot()
+            bot = await TelegramService.get_bot_async()
         
         try:
             message = await bot.send_message(
