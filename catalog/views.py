@@ -62,7 +62,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     """
     
     queryset = Product.objects.select_related('category').prefetch_related(
-        'productimage_set__image'
+        'productimage_set'
     ).all()
     
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
