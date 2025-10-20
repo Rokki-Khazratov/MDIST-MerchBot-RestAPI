@@ -26,6 +26,10 @@ class BotConfigAdmin(admin.ModelAdmin):
             'fields': ('webhook_url',),
             'description': 'Webhook URL for receiving Telegram updates'
         }),
+        ('Mini App Configuration', {
+            'fields': ('mini_app_url',),
+            'description': 'Mini App URL for the shop (e.g., https://t.me/zzz/app)'
+        }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)

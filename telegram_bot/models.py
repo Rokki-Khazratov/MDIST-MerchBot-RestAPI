@@ -36,6 +36,12 @@ class BotConfig(models.Model):
         help_text='Telegram group ID where notifications will be sent (e.g., -1001234567890)'
     )
     
+    mini_app_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text='Mini App URL for the shop (e.g., https://t.me/zzz/app)'
+    )
+    
     is_active = models.BooleanField(
         default=True,
         help_text='Enable/disable bot notifications'
