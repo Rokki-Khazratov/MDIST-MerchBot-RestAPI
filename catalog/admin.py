@@ -129,6 +129,8 @@ class ProductAdmin(admin.ModelAdmin):
     
     def price_effective_display(self, obj):
         """Display effective price."""
+        if obj.price_effective is None:
+            return format_html('<strong>Не указана</strong>')
         return format_html('<strong>{} сум</strong>', f"{float(obj.price_effective):,.0f}")
     price_effective_display.short_description = 'Effective Price'
     
